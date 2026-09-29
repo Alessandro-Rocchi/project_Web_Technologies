@@ -337,7 +337,7 @@
                             </p>
                             <ul>
                                 <li><strong>Alessandro Rocchi (<em>Presidente</em>):</strong> Project Management, Cartographic &amp; Spatial Modeling, Leaflet Routing Engine.</li>
-                                <li><strong>Daniele Bottaro (<em>Dan</em>):</strong> Linked Open Data (LOD) Modeling, Wikidata &amp; VIAF Semantic Integration, Catalog Architecture.</li>
+                                <li><strong>Daniele Bottaro (<em>Dan</em>):</strong> Multi-Theme CSS Design System, Responsive Frontend Engineering, Narrative &amp; Tone Integration.</li>
                                 <li><strong>Elena Mocci (<em>Mele</em>):</strong> Multi-Theme CSS Design System, Responsive Frontend Engineering, Narrative &amp; Tone Integration.</li>
                             </ul>
                         </section>
@@ -715,32 +715,32 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td><strong>Solarpunk (Default)</strong></td>
+                                            <td><strong>Solarpunk</strong></td>
                                             <td><code>styles/solarpunk_theme.css</code></td>
-                                            <td>Eco-optimistic harmony between technology and nature; Art Nouveau curves.</td>
+                                            <td>Eco-optimistic harmony between technology and nature.</td>
                                             <td>Forest green, sage mint, warm parchment, morning sun gold.</td>
-                                            <td>Playfair Display, Inter, Montserrat</td>
+                                            <td>Playfair Display, Inter, Space Mono</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Nouvelle Vague</strong></td>
+                                            <td><strong>Nouvelle Vague (Default)</strong></td>
                                             <td><code>styles/nouvelle_vague_theme.css</code></td>
                                             <td>Monochrome 1960s film celluloid; intellectual <em>Cahiers du Cinéma</em> editorial style.</td>
                                             <td>High-contrast black, crisp paper white, deep and elegant red.</td>
-                                            <td>GFS Didot, Anton, Inter</td>
+                                            <td>GFS Didot, Playfair Display, Inter, Space Mono</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Eighties</strong></td>
                                             <td><code>styles/eighties_theme.css</code></td>
                                             <td>1980s arcade culture, CRT terminal scanlines, synthwave neon aesthetic.</td>
                                             <td>Deep CRT green-black, phosphor green.</td>
-                                            <td>VT323 (8-bit), Space Mono</td>
+                                            <td>VT323 (8-bit)</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Futurism</strong></td>
                                             <td><code>styles/futurism_theme.css</code></td>
                                             <td>Early 20th-century Italian Futurism; speed, industrial force, diagonal cuts.</td>
                                             <td>Kinetic cobalt, blazing crimson, warning yellow, bright white.</td>
-                                            <td>Anton, Space Mono</td>
+                                            <td>Courier New, Anton, Space Mono, Inter, Playfair, GFS Didot, Montserrat</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Mechanicum</strong></td>
@@ -753,42 +753,17 @@
                                             <td><strong>Rococo</strong></td>
                                             <td><code>styles/rococo_theme.css</code></td>
                                             <td>18th-century French aristocratic elegance, pastel lightness, decorative flourishes.</td>
-                                            <td>Powder pink, creamy ivory, rose gold.</td>
-                                            <td>Pinyon Script, Playfair Display</td>
+                                            <td>Powder pink, creamy ivory, rose gold, sage mint.</td>
+                                            <td>Pinyon Script, Playfair Display, Inter</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
-                            <h4>Theme-Adaptive Tone Selection Controls</h4>
-                            <p>
-                                Demonstrating deep CSS decoupling, each stylesheet defines dedicated visual rules for the Tone Selector buttons (<code>.btn-tone</code> and <code>.btn-tone.active</code>) to ensure interface controls seamlessly embody each aesthetic universe:
-                            </p>
-                            <ul>
-                                <li><strong>Solarpunk:</strong> Translucent organic pill buttons (<code>border-radius: 30px</code>) with subtle gold borders, smooth elevation transforms, and a warm solar hover glow.</li>
-                                <li><strong>Nouvelle Vague:</strong> High-contrast cinematic minimalism with sharp black-and-paper borders (<code>#1A1A1A</code> / <code>#EDEAE2</code>) and Space Mono typography.</li>
-                                <li><strong>Eighties:</strong> Retro terminal phosphor-green buttons (<code>#33FF33</code>) set against CRT black (<code>#020802</code>) with zero border radius and 8-bit <code>VT323</code> typography.</li>
-                                <li><strong>Futurism:</strong> Kinetic angled styling featuring speed-inspired cobalt and warning emerald accents (<code>#009760</code>) with Space Mono font.</li>
-                                <li><strong>Mechanicum:</strong> Grimdark forged iron borders (<code>border: 3px solid var(--iron-plate)</code>) with heavy rust drop shadows (<code>box-shadow: 4px 4px 0 var(--blood-rust)</code>) that ignite with a furnace fire glow on active/hover state.</li>
-                                <li><strong>Rococo:</strong> Aristocratic pastel lightness featuring antique gold fill (<code>#A87C43</code>), dusty rose borders (<code>#925e5e</code>), and delicate serif accents.</li>
-                            </ul>
-
-                            <h4>Theme-Adaptive Narrative Tone Cards</h4>
-                            <p>
-                                Following the same design philosophy, the narrative tone cards documented in Section 4.2.2 (<code>.doc-tone-card</code>) dynamically adopt the signature visual language of each active theme:
-                            </p>
-                            <ul>
-                                <li><strong>Solarpunk:</strong> Translucent glassmorphism (<code>backdrop-filter: blur(12px)</code>) with organic rounded corners (<code>border-radius: 16px</code>), leaf-green (<code>adult</code>), warm amber (<code>child</code>), and deep forest (<code>professional</code>) accent borders.</li>
-                                <li><strong>Nouvelle Vague:</strong> High-contrast cinematic monochrome with sharp 4px corners, bold <code>Anton</code> titles, and Godardian Tricolore accents (Yves Klein blue for <code>adult</code>, cinema red for <code>child</code>, stark black for <code>professional</code>).</li>
-                                <li><strong>Eighties:</strong> Retro CRT terminal cards (<code>#051405</code> background, <code>border-radius: 0</code>) with neon phosphor glow (CRT green for <code>adult</code>, arcade pink for <code>child</code>, and cyber cyan for <code>professional</code>) rendered in 8-bit <code>VT323</code> font.</li>
-                                <li><strong>Futurism:</strong> Sharp constructivist angles with 3px solid black borders, dynamic drop shadows, and high-impact manifesto colors (emerald speed green for <code>adult</code>, kinetic yellow for <code>child</code>, and speed red for <code>professional</code>).</li>
-                                <li><strong>Mechanicum:</strong> Grimdark forge styling with cast-iron plating, dark metallic backgrounds (<code>#111111</code> / <code>#0d0a08</code>), blood-rust borders, and furnace fire / brass highlights.</li>
-                                <li><strong>Rococo:</strong> Aristocratic salon aesthetics featuring ivory surfaces (<code>#FFFDFC</code>), delicate dusty rose borders (<code>#E8B4B8</code>), antique gold headers, and warm ambient shadows.</li>
-                            </ul>
 
                             <h3>6.3 Typography and Icon Suites</h3>
                             <ul>
-                                <li><strong>Google Fonts:</strong> <code>Anton</code>, <code>GFS Didot</code>, <code>Inter</code>, <code>Montserrat</code>, <code>Pinyon Script</code>, <code>Playfair Display</code>, <code>Space Mono</code>, <code>VT323</code>.</li>
+                                <li><strong>Google Fonts:</strong> <code>Anton</code>,<code>Courier New</code>, <code>GFS Didot</code>, <code>Inter</code>, <code>Montserrat</code>, <code>Pinyon Script</code>, <code>Playfair Display</code>, <code>Space Mono</code>, <code>VT323</code>.</li>
                                 <li><strong>Bootstrap Icons (v1.11.3):</strong> Navigational arrows, status indicators, badges.</li>
                                 <li><strong>Material Symbols Outlined:</strong> Theme switcher triggers (<code>palette</code>, <code>videocam</code>, <code>monitor</code>, <code>flash_on</code>, <code>settings</code>, <code>clear_day</code>, <code>spa</code>) with descriptive accessibility tooltips.</li>
                                 <li><strong>Bootstrap 5.3:</strong> CSS normalization, responsive 12-column grid, collapses, and offcanvas drawers.</li>
@@ -808,7 +783,7 @@
                                     26 pairs of synchronized images (46 total visual assets) comparing historical 1950s/1960s film frames (<code>*Old.*</code>) against contemporary photography shot almost from the exact same angle and perspective, when possible (<code>*Modern.*</code>).
                                 </li>
                                 <li><strong>Historical Portraits:</strong> Archival photographs of François Truffaut, Jean-Luc Godard, Agnès Varda, and André Bazin.</li>
-                                <li><strong>Branding & Fallbacks:</strong> Vector logo (<code>S.svg</code>) symbolizing the curve of the Seine and cinema celluloid reels, backed by an image fallback handler (<code>generic_bg.png</code>).</li>
+                                <li><strong>Branding & Fallbacks:</strong> Vector logo (<code>S.svg</code>) symbolizing the curve of the Seine, cinema celluloid reels/winding road, seen as reflection of a camera lens backed by an image fallback handler (<code>generic_bg.png</code>).</li>
                             </ul>
                         </section>
 
@@ -924,8 +899,7 @@ npx serve .</code></pre>
 
                                 <ul>
                                     <li>Code implementation and debugging: evaluating alternative approaches in HTML, CSS, and JavaScript; refining responsive behaviors; and troubleshooting interactive components (including dynamic mapping, filtering, and theme switches).</li>
-                                    <li>Repository maintenance and data integrity: identifying syntax issues, verifying structural integrity across dataset files, reconciling relative asset paths following directory reorganizations, and assisting with code refactoring.</li>
-                                    <li>UI/UX prototyping: exploring layout variations, assessing user flows, and translating editorial criteria into front-end visual behaviors.</li>
+                                    <li>Repository maintenance and data integrity: identifying syntax issues, verifying structural integrity across dataset files, reconciling relative asset paths following directory reorganizations, and assisting with code refactoring.</li>                                
                                 </ul>
                             </p>
                             <p>
@@ -933,9 +907,9 @@ npx serve .</code></pre>
                                 It is explicitly stated that all items presented (data entries, resources, metadata, assets, and visual materials) as well as the entire project documentation were conceived, authored, cataloged, and thoroughly verified directly by human beings. Every single element reflects deliberate, purposeful decisions made within the overarching planning, methodology, and scope of the project.
 
                                 The AI model was not treated as an authoritative, historical, or bibliographic source, nor were any curatorial or editorial decisions delegated to it. All machine-assisted outputs were rigorously examined, tested, and adapted prior to inclusion. Full intellectual authorship and final responsibility for the published contents, methodological rigor, and technical solutions rest solely and jointly with the authors: Alessandro Rocchi, Elena Mocci, and Daniele Bottaro.
-
-                                Runtime Architecture
-
+                            </p>
+                            <p>
+                                <strong>Runtime Architecture:</strong>
                                 The deployed web application operates deterministically: it makes no calls to generative AI APIs and generates no content automatically at runtime. The use of Gemini was strictly confined to the local development and authoring stages.
                             </p>
                         </section>

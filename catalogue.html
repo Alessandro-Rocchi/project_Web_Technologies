@@ -88,33 +88,33 @@
                                     <h2>Filters</h2>
                                 </div>
 
+                                <div class="filter-group">
+                                    <label class="form-label" for="filter_search">Search:</label>
+                                    <input type="search" class="form-control" id="filter_search" placeholder="Search location, film..." aria-label="Search catalogue">
+                                </div>
+
                                 <div class="filter-group"> 
-                                    <label class="form-label">Sort by:</label>
-                                    <select class="form-select" aria-label="Sort by">
-                                        <option selected>Select...</option>
-                                        <option value="A-Z">A-Z</option>
-                                        <option value="Z-A">Z-A</option>
-                                        <option value="new_to_old">New to old</option>
+                                    <label class="form-label" for="filter_sort">Sort by:</label>
+                                    <select class="form-select" id="filter_sort" aria-label="Sort by">
+                                        <option value="default" selected>Default</option>
+                                        <option value="name-asc">Location Name (A - Z)</option>
+                                        <option value="name-desc">Location Name (Z - A)</option>
+                                        <option value="year-desc">Film Year (New to old)</option>
+                                        <option value="year-asc">Film Year (Old to new)</option>
                                     </select>
                                 </div>
 
                                 <div class="filter-group">
-                                    <label class="form-label">Director:</label>
-                                    <select class="form-select" aria-label="Regista">
-                                        <option selected>Select...</option>
-                                        <option value="Tizio">Jean-Luc Godard</option>
-                                        <option value="Caio">Agnès Varda</option>
-                                        <option value="Sempronio">François Truffaut</option>
+                                    <label class="form-label" for="filter_director">Director:</label>
+                                    <select class="form-select" id="filter_director" aria-label="Director">
+                                        <option value="all" selected>All directors</option>
                                     </select>
                                 </div>
 
                                 <div class="filter-group">
-                                    <label class="form-label">Film:</label>
-                                    <select class="form-select" aria-label="Film">
-                                        <option selected>Select...</option>
-                                        <option value="Film_1">A Bout de Souffle</option>
-                                        <option value="Film_2">La Jetée</option>
-                                        <option value="Film_3">Les 400 Coups</option>
+                                    <label class="form-label" for="filter_film">Film:</label>
+                                    <select class="form-select" id="filter_film" aria-label="Film">
+                                        <option value="all" selected>All films</option>
                                     </select>
                                 </div>
                                 <div class="filter-group pt-2">

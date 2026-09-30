@@ -69,8 +69,8 @@ const pages = {
                 // Ignore clicks that didn't hit a button or hit a disabled button
                 if (!btn || btn.disabled) return;
 
-                // Calculate total number of pages based on total locations and items per page
-                const totalPages = Math.ceil(catalogueState.allLocations.length / catalogueState.itemsPerPage) || 1;
+                // Calculate total number of pages based on filtered locations and items per page
+                const totalPages = Math.ceil(catalogueState.filteredLocations.length / catalogueState.itemsPerPage) || 1;
                 let targetPage = catalogueState.currentPage;
 
                 // Handle Prev/Next arrow navigation (-1 or +1)
@@ -96,14 +96,83 @@ const pages = {
             });
         }
 
+        // Search input filter listener (real-time filtering)
+        const searchInput = document.getElementById("filter_search");
+        if (searchInput) {
+            searchInput.addEventListener("input", (e) => {
+                catalogueState.filters.search = e.target.value.trim();
+                applyCatalogueFilters();
+            });
+        }
+
+        // Sort by select listener
+        const sortSelect = document.getElementById("filter_sort");
+        if (sortSelect) {
+            sortSelect.addEventListener("change", (e) => {
+                catalogueState.filters.sortBy = e.target.value;
+                applyCatalogueFilters();
+            });
+        }
+
+        // Director filter listener (cascades to film)
+        const directorSelect = document.getElementById("filter_director");
+        const filmSelect = document.getElementById("filter_film");
+        if (directorSelect) {
+            directorSelect.addEventListener("change", (e) => {
+                const selectedDirector = e.target.value;
+                catalogueState.filters.director = selectedDirector;
+
+                // Cascading update: update film options based on selected director
+                const currentFilm = filmSelect ? filmSelect.value : 'all';
+                populateFilmOptions(selectedDirector, currentFilm);
+                catalogueState.filters.film = filmSelect ? filmSelect.value : 'all';
+
+                applyCatalogueFilters();
+            });
+        }
+
+        // Film filter listener (syncs director if needed)
+        if (filmSelect) {
+            filmSelect.addEventListener("change", (e) => {
+                const selectedFilm = e.target.value;
+                catalogueState.filters.film = selectedFilm;
+
+                // If a specific film is chosen and director is 'all', auto-sync to its director
+                if (selectedFilm !== 'all') {
+                    const matchedDirector = findDirectorForFilm(selectedFilm);
+                    if (matchedDirector && directorSelect && directorSelect.value !== matchedDirector) {
+                        directorSelect.value = matchedDirector;
+                        catalogueState.filters.director = matchedDirector;
+                        populateFilmOptions(matchedDirector, selectedFilm);
+                    }
+                }
+
+                applyCatalogueFilters();
+            });
+        }
+
+        // Reset filters button listener
+        const resetBtn = document.getElementById("btn_reset_filters");
+        if (resetBtn) {
+            resetBtn.addEventListener("click", () => {
+                resetCatalogueFilters();
+            });
+        }
+
         // Asynchronously fetch catalogue locations metadata
         loadScriptJson().then(locations => {
             if (locations && locations.length > 0) {
-                // Store loaded locations in state and render page 1
+                // Store loaded locations in state
                 catalogueState.allLocations = locations;
-                displayCataloguePage(1);
+                // Dynamically populate filter dropdown options
+                populateDirectorOptions();
+                populateFilmOptions('all');
+                // Apply initial filters and render page 1
+                applyCatalogueFilters();
             } else {
                 // Fallback to empty state if no locations returned
+                catalogueState.allLocations = [];
+                catalogueState.filteredLocations = [];
                 renderCatalogueCards([]);
             }
         });
@@ -523,13 +592,279 @@ function updateLocationTexts(index) {
 // =============================================================================
 
 /**
- * Reactive state object tracking catalogue items and pagination status.
+ * Reactive state object tracking catalogue items, active filters, and pagination status.
  */
 const catalogueState = {
-    allLocations: [], // Complete array of fetched location objects
-    currentPage: 1,   // Currently displayed page number (1-indexed)
-    itemsPerPage: 9   // Number of location cards displayed per page
+    allLocations: [],      // Complete array of fetched location objects
+    filteredLocations: [], // Processed array after search, filter & sort
+    currentPage: 1,        // Currently displayed page number (1-indexed)
+    itemsPerPage: 9,       // Number of location cards displayed per page
+    filters: {
+        search: '',
+        director: 'all',
+        film: 'all',
+        sortBy: 'default'
+    }
 };
+
+/**
+ * Safely extracts the associated movies array for a given location.
+ * @param {Object} loc - Location object.
+ * @returns {Array<Object>}
+ */
+function getMoviesForLocation(loc) {
+    return (loc && Array.isArray(loc.associated_movie)) ? loc.associated_movie : [];
+}
+
+/**
+ * Extracts a sorted array of unique director names from the loaded locations.
+ * @param {Array<Object>} locations
+ * @returns {Array<string>}
+ */
+function getUniqueDirectors(locations) {
+    const directors = new Set();
+    locations.forEach(loc => {
+        getMoviesForLocation(loc).forEach(m => {
+            if (m.director && m.director.trim()) {
+                directors.add(m.director.trim());
+            }
+        });
+    });
+    return Array.from(directors).sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Extracts a sorted array of unique film names, optionally filtered by director.
+ * @param {Array<Object>} locations
+ * @param {string} directorFilter - 'all' or specific director name.
+ * @returns {Array<string>}
+ */
+function getUniqueFilms(locations, directorFilter = 'all') {
+    const films = new Set();
+    locations.forEach(loc => {
+        getMoviesForLocation(loc).forEach(m => {
+            if (m.film_name && m.film_name.trim()) {
+                if (directorFilter === 'all' || m.director === directorFilter) {
+                    films.add(m.film_name.trim());
+                }
+            }
+        });
+    });
+    return Array.from(films).sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Finds the director associated with a specific film title.
+ * @param {string} filmName
+ * @returns {string|null}
+ */
+function findDirectorForFilm(filmName) {
+    for (const loc of catalogueState.allLocations) {
+        for (const m of getMoviesForLocation(loc)) {
+            if (m.film_name === filmName && m.director) {
+                return m.director;
+            }
+        }
+    }
+    return null;
+}
+
+/**
+ * Populates the Director select dropdown options dynamically.
+ */
+function populateDirectorOptions() {
+    const directorSelect = document.getElementById('filter_director');
+    if (!directorSelect) return;
+    const directors = getUniqueDirectors(catalogueState.allLocations);
+    const currentVal = directorSelect.value;
+
+    directorSelect.innerHTML = '<option value="all">All directors</option>';
+    directors.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        directorSelect.appendChild(opt);
+    });
+
+    if (directors.includes(currentVal)) {
+        directorSelect.value = currentVal;
+    } else {
+        directorSelect.value = 'all';
+    }
+}
+
+/**
+ * Populates the Film select dropdown options dynamically based on the active director.
+ * @param {string} selectedDirector - Active director or 'all'.
+ * @param {string} preserveFilm - Film value to preserve if still valid.
+ */
+function populateFilmOptions(selectedDirector = 'all', preserveFilm = '') {
+    const filmSelect = document.getElementById('filter_film');
+    if (!filmSelect) return;
+    const films = getUniqueFilms(catalogueState.allLocations, selectedDirector);
+
+    filmSelect.innerHTML = '<option value="all">All films</option>';
+    films.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f;
+        opt.textContent = f;
+        filmSelect.appendChild(opt);
+    });
+
+    if (preserveFilm && films.includes(preserveFilm)) {
+        filmSelect.value = preserveFilm;
+    } else {
+        filmSelect.value = 'all';
+    }
+}
+
+/**
+ * Computes min or max film production year associated with a location.
+ * @param {Object} loc - Location object.
+ * @param {'min'|'max'} mode
+ * @returns {number}
+ */
+function getFilmYearForLocation(loc, mode = 'max') {
+    const movies = getMoviesForLocation(loc);
+    const years = movies
+        .map(m => parseInt(m.production_year, 10))
+        .filter(y => !isNaN(y));
+    if (years.length === 0) {
+        return mode === 'max' ? -Infinity : Infinity;
+    }
+    return mode === 'max' ? Math.max(...years) : Math.min(...years);
+}
+
+/**
+ * Normalizes a string for diacritic-insensitive and case-insensitive comparison.
+ * @param {string} str
+ * @returns {string}
+ */
+function normalizeSearchText(str) {
+    return (str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+}
+
+/**
+ * Evaluates active filter criteria, sorts the results, updates filteredLocations,
+ * and displays the first page.
+ */
+function applyCatalogueFilters() {
+    const { search, director, film, sortBy } = catalogueState.filters;
+    const normalizedQuery = normalizeSearchText(search);
+
+    let result = catalogueState.allLocations.filter(loc => {
+        const movies = getMoviesForLocation(loc);
+
+        // 1. Director filter
+        if (director !== 'all') {
+            const hasDirector = movies.some(m => m.director === director);
+            if (!hasDirector) return false;
+        }
+
+        // 2. Film filter
+        if (film !== 'all') {
+            const hasFilm = movies.some(m => m.film_name === film);
+            if (!hasFilm) return false;
+        }
+
+        // 3. Search query filter
+        if (normalizedQuery) {
+            const name = normalizeSearchText(loc.location_name);
+            const descAdult = normalizeSearchText(loc.tones && loc.tones.adult && loc.tones.adult.simple_description);
+            const descMed = normalizeSearchText(loc.medium_description);
+            const curiosity = normalizeSearchText(loc.curiosity);
+            const matchesMovie = movies.some(m => 
+                normalizeSearchText(m.film_name).includes(normalizedQuery) ||
+                normalizeSearchText(m.director).includes(normalizedQuery) ||
+                normalizeSearchText(m.starring).includes(normalizedQuery)
+            );
+
+            const matchesText = name.includes(normalizedQuery) ||
+                                descAdult.includes(normalizedQuery) ||
+                                descMed.includes(normalizedQuery) ||
+                                curiosity.includes(normalizedQuery) ||
+                                matchesMovie;
+
+            if (!matchesText) return false;
+        }
+
+        return true;
+    });
+
+    // 4. Sorting
+    result = sortCatalogueLocations(result, sortBy);
+
+    catalogueState.filteredLocations = result;
+    displayCataloguePage(1);
+}
+
+/**
+ * Sorts location objects based on selected sort criteria.
+ * @param {Array<Object>} locations
+ * @param {string} sortBy
+ * @returns {Array<Object>}
+ */
+function sortCatalogueLocations(locations, sortBy) {
+    const list = [...locations];
+    switch (sortBy) {
+        case 'name-asc':
+            list.sort((a, b) => (a.location_name || '').localeCompare(b.location_name || ''));
+            break;
+        case 'name-desc':
+            list.sort((a, b) => (b.location_name || '').localeCompare(a.location_name || ''));
+            break;
+        case 'year-desc':
+            list.sort((a, b) => {
+                const yearDiff = getFilmYearForLocation(b, 'max') - getFilmYearForLocation(a, 'max');
+                if (yearDiff !== 0) return yearDiff;
+                return (a.location_name || '').localeCompare(b.location_name || '');
+            });
+            break;
+        case 'year-asc':
+            list.sort((a, b) => {
+                const yearDiff = getFilmYearForLocation(a, 'min') - getFilmYearForLocation(b, 'min');
+                if (yearDiff !== 0) return yearDiff;
+                return (a.location_name || '').localeCompare(b.location_name || '');
+            });
+            break;
+        case 'default':
+        default:
+            list.sort((a, b) => {
+                const idxA = catalogueState.allLocations.indexOf(a);
+                const idxB = catalogueState.allLocations.indexOf(b);
+                return idxA - idxB;
+            });
+            break;
+    }
+    return list;
+}
+
+/**
+ * Resets all catalogue filters, search query, and sorting back to default.
+ */
+function resetCatalogueFilters() {
+    catalogueState.filters.search = '';
+    catalogueState.filters.director = 'all';
+    catalogueState.filters.film = 'all';
+    catalogueState.filters.sortBy = 'default';
+
+    const searchInput = document.getElementById('filter_search');
+    const sortSelect = document.getElementById('filter_sort');
+    const directorSelect = document.getElementById('filter_director');
+    const filmSelect = document.getElementById('filter_film');
+
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'default';
+    if (directorSelect) directorSelect.value = 'all';
+    populateFilmOptions('all');
+    if (filmSelect) filmSelect.value = 'all';
+
+    applyCatalogueFilters();
+}
 
 /**
  * Calculates page slices, renders the location card grid for the target page,
@@ -537,7 +872,8 @@ const catalogueState = {
  * @param {number} page - Page number to navigate to.
  */
 function displayCataloguePage(page) {
-    const totalItems = catalogueState.allLocations.length;
+    const totalItems = catalogueState.filteredLocations.length;
+    const totalAll = catalogueState.allLocations.length;
     // Calculate total pages (fallback to 1 if no items)
     const totalPages = Math.ceil(totalItems / catalogueState.itemsPerPage) || 1;
 
@@ -549,7 +885,7 @@ function displayCataloguePage(page) {
     // Calculate array slice indices for the current page
     const startIndex = (page - 1) * catalogueState.itemsPerPage;
     const endIndex = Math.min(startIndex + catalogueState.itemsPerPage, totalItems);
-    const pageLocations = catalogueState.allLocations.slice(startIndex, endIndex);
+    const pageLocations = catalogueState.filteredLocations.slice(startIndex, endIndex);
 
     // Render location cards for this page slice
     renderCatalogueCards(pageLocations);
@@ -559,6 +895,12 @@ function displayCataloguePage(page) {
     if (catalogueTitle) {
         if (totalItems === 0) {
             catalogueTitle.textContent = "0 locations shown";
+        } else if (totalItems === 1) {
+            catalogueTitle.textContent = totalAll > 1
+                ? `1 of ${totalAll} locations shown (Page 1 of 1)`
+                : `1 location shown (Page 1 of 1)`;
+        } else if (totalItems !== totalAll) {
+            catalogueTitle.textContent = `${totalItems} of ${totalAll} locations shown (Page ${page} of ${totalPages})`;
         } else {
             catalogueTitle.textContent = `${totalItems} locations shown (Page ${page} of ${totalPages})`;
         }
@@ -688,10 +1030,20 @@ function renderCatalogueCards(locations) {
     if (!locations || locations.length === 0) {
         cardSection.innerHTML = `
             <div class="col-12 text-center py-5">
-                <h3 class="mb-3">No locations available</h3>
-                <p class="lead">No locations are currently available for display.</p>
+                <span class="material-symbols-outlined" style="font-size: 3.5rem; opacity: 0.6;">search_off</span>
+                <h3 class="mt-3 mb-2">No locations found</h3>
+                <p class="lead mb-4">No locations match your filter or search criteria.</p>
+                <button type="button" class="btn btn-outline-secondary" id="btn_empty_reset">
+                    Reset all filters
+                </button>
             </div>
         `;
+        const emptyResetBtn = document.getElementById('btn_empty_reset');
+        if (emptyResetBtn) {
+            emptyResetBtn.addEventListener('click', () => {
+                resetCatalogueFilters();
+            });
+        }
         return;
     }
 
@@ -703,9 +1055,8 @@ function renderCatalogueCards(locations) {
 
         const imgUrl = location.image_url || "img/generic_bg.png";
         const title = location.location_name || "Location";
-        const desc = location.tones.adult.simple_description || location.medium_description || "";
+        const desc = (location.tones && location.tones.adult && location.tones.adult.simple_description) || location.medium_description || "";
         const mapUrl = `map.html?location=${encodeURIComponent(location.location_name || '')}`;
-
 
         // Build HTML template for the location card with image fallback and link to map
         col.innerHTML = `
